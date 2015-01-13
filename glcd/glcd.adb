@@ -46,6 +46,9 @@ package body GLCD is
    end SelectController;
 
    procedure WaitForChip(Controller:ChipSelect) is
+      DataIn_Bits : Bits_In_Byte;
+      for DataIn_Bits'Address use PIN_Data'Address;
+      pragma Volatile (DataIn_Bits);
    begin
       SelectController(Controller);
       DI := Low;

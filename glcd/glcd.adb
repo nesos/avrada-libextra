@@ -2,6 +2,7 @@ with Interfaces; use Interfaces;
 
 with AVR; use AVR;
 with AVR.Wait;
+with AVR.Interrupts;
 
 with GLCD.Config; use GLCD.Config;
 
@@ -46,10 +47,8 @@ package body GLCD is
    end SelectController;
 
    procedure WaitForChip(Controller:ChipSelect) is
-      DataIn_Bits : Bits_In_Byte;
-      for DataIn_Bits'Address use PIN_Data'Address;
-      pragma Volatile (DataIn_Bits);
    begin
+      Interrupts.Disable_Interrupts;
       SelectController(Controller);
       DI := Low;
       DDR_Data := 16#00#;
@@ -66,10 +65,12 @@ package body GLCD is
       Enable := Low;
       RW := Low;
       DDR_Data := 16#FF#;
+      Interrupts.Enable_Interrupts;
    end WaitForChip;
 
    procedure WriteCommand(Controller:ChipSelect; Command:Nat8) is
    begin
+      Interrupts.Disable_Interrupts;
       WaitForChip(Controller);
       DI := Low;
       RW := Low;
@@ -78,10 +79,12 @@ package body GLCD is
       PORT_Data := Command;
       Wait.Wait_4_Cycles (4);
       Enable := Low;
+      Interrupts.Disable_Interrupts;
    end WriteCommand;
 
    procedure WriteData(Controller:ChipSelect; Data:Nat8) is
    begin
+      Interrupts.Disable_Interrupts;
       WaitForChip(Controller);
       DI := High;
       RW := Low;
@@ -90,11 +93,13 @@ package body GLCD is
       PORT_Data := Data;
       Wait.Wait_4_Cycles (4);
       Enable := Low;
+      Interrupts.Disable_Interrupts;
    end WriteData;
 
    function ReadData(Controller:ChipSelect) return Nat8 is
       ReadData: Nat8 := 0;
    begin
+      Interrupts.Disable_Interrupts;
       WaitForChip(Controller);
       DDR_Data := 16#00#;
       DI := High;
@@ -103,6 +108,7 @@ package body GLCD is
       Wait.Wait_4_Cycles (4);
       ReadData := PIN_Data;
       Enable := Low;
+      Interrupts.Disable_Interrupts;
       return ReadData;
    end ReadData;
 
@@ -110,8 +116,6 @@ package body GLCD is
       Page_Select_Cmd : Nat8 := 2#10111000#;
       Col_Select_Cmd : Nat8 :=  2#01000000#;
    begin
-      --TODO remember the current selected page on each controller
-      --     and only call the controller when needed
       Col_Select_Cmd := Col_Select_Cmd + Column;
       Page_Select_Cmd := Page_Select_Cmd + Page;
       WriteCommand(Controller, Col_Select_Cmd);

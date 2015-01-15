@@ -79,7 +79,7 @@ package body GLCD is
       PORT_Data := Command;
       Wait.Wait_4_Cycles (4);
       Enable := Low;
-      Interrupts.Disable_Interrupts;
+      Interrupts.Enable_Interrupts;
    end WriteCommand;
 
    procedure WriteData(Controller:ChipSelect; Data:Nat8) is
@@ -93,7 +93,7 @@ package body GLCD is
       PORT_Data := Data;
       Wait.Wait_4_Cycles (4);
       Enable := Low;
-      Interrupts.Disable_Interrupts;
+      Interrupts.Enable_Interrupts;
    end WriteData;
 
    function ReadData(Controller:ChipSelect) return Nat8 is
@@ -108,7 +108,7 @@ package body GLCD is
       Wait.Wait_4_Cycles (4);
       ReadData := PIN_Data;
       Enable := Low;
-      Interrupts.Disable_Interrupts;
+      Interrupts.Enable_Interrupts;
       return ReadData;
    end ReadData;
 
